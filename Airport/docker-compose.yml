@@ -1,0 +1,229 @@
+version: "3"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbitmquser
+      - RABBITMQ_DEFAULT_PASS=DEBmbwkSrzy9D1T9cJfa
+
+  sqlserver:
+    image: microsoft/mssql-server-linux:latest
+    container_name: sqlserver
+    volumes:
+      - sqlserverdata:/var/opt/mssql
+    ports:
+      - "1434:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=8jkGh47hnDw89Haq8LN2
+    
+  mailserver:
+    image: maildev/maildev
+    container_name: mailserver
+    ports:
+      - "25:25"
+      - "4000:80"
+
+  flightmanagementapi:
+    image: airport/flightmanagementapi:latest
+    build: FlightManagementApi
+    container_name: flightmanagementapi
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    ports:
+      - "5000:80"
+    expose:
+      - 5000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  flighteventhandler:
+    image: airport/flighteventhandler:latest
+    build: FlightEventHandler
+    container_name: flighteventhandler
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  financialmanagementapi:
+    image: airport/financialmanagementapi:latest
+    build: FinancialManagementApi
+    container_name: financialmanagementapi
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    ports:
+      - "5100:80"
+    expose:
+      - 5100
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  financialeventhandler:
+    image: airport/financialeventhandler:latest
+    build: FinancialEventHandler
+    container_name: financialeventhandler
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  customermanagementapi:
+    image: airport/customermanagementapi:latest
+    build: CustomerManagementApi
+    container_name: customermanagementapi
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    ports:
+      - "5200:80"
+    expose:
+      - 5200
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  customereventhandler:
+    image: airport/customereventhandler:latest
+    build: CustomerEventHandler
+    container_name: customereventhandler
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  airportmanagementapi:
+    image: airport/airportmanagementapi:latest
+    build: AirportManagementApi
+    container_name: airportmanagementapi
+    restart: on-failure
+    depends_on:
+      - sqlserver
+    ports:
+      - "5300:80"
+    expose:
+      - 5300
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  gatemanagementapi:
+    image: airport/gatemanagementapi:latest
+    build: GateManagementApi
+    container_name: gatemanagementapi
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    ports:
+      - "5400:80"
+    expose:
+      - 5400
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  gateeventhandler:
+    image: airport/gateeventhandler:latest
+    build: GateEventHandler
+    container_name: gateeventhandler
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  passengermanagementapi:
+    image: airport/passengermanagementapi:latest
+    build: PassengerManagementApi
+    container_name: passengermanagementapi
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    ports:
+      - "5500:80"
+    expose:
+      - 5500
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  passengereventhandler:
+    image: airport/passengereventhandler:latest
+    build: PassengerEventHandler
+    container_name: passengereventhandler
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  zonemanagementapi:
+    image: airport/zonemanagementapi:latest
+    build: ZoneManagementApi
+    container_name: zonemanagementapi
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    ports:
+      - "5600:80"
+    expose:
+      - 5600
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  zoneeventhandler:
+    image: airport/zoneeventhandler:latest
+    build: ZoneEventHandler
+    container_name: zoneeventhandler
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  baggageeventhandler:
+    image: airport/baggageeventhandler:latest
+    build: BaggageEventHandler
+    container_name: baggageeventhandler
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  notificationservice:
+    image: airport/notificationservice:latest
+    build: NotificationService
+    container_name: notificationservice
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - mailserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+volumes:
+  sqlserverdata:
+    external: true    
+  rabbitmqdata:
+    external: true
